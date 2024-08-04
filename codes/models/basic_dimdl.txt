@@ -1,0 +1,72 @@
+# Copyright (C) <2023>  <Risa Katayama>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+model {
+	b.di.mu[1] ~ dnorm(0,1/5^2)
+	b.di.mu[2] ~ dnorm(0,1/5^2)
+	b.di.mu[3] ~ dnorm(0,1/5^2)
+
+	b.di.sig[1] ~ dunif(1e-10,5)
+	b.di.sig[2] ~ dunif(1e-10,5) 
+	b.di.sig[3] ~ dunif(1e-10,5)
+
+	b.icf.mu[1] ~ dnorm(0,2)
+
+	b.icf.sig[1] ~ dunif(1e-10,5)
+
+	a0.icf.mu ~ dnorm(0,1/10^2)
+	a1.icf.mu ~ dunif(1e-5,5)
+	
+	a0.icf.sig ~ dunif(1e-10,5)	
+	
+  	for (s in 1:ns) {
+	
+		b0.di.p[s] ~ dnorm(b.di.mu[1],1/b.di.sig[1]^2)
+		b1.di.p[s] ~ dnorm(b.di.mu[2],1/b.di.sig[2]^2)
+		b2.di.p[s] ~ dnorm(b.di.mu[3],1/b.di.sig[3]^2)
+
+		b1.icf.p[s] ~ dnorm(b.icf.mu[1],1/b.icf.sig[1]^2)
+
+		a0.icf.p[s] ~ dnorm(a0.icf.mu,1/a0.icf.sig^2)
+		th.icf[s,1:3] = sort(c(a0.icf.p[s]-a1.icf.mu, a0.icf.p[s], a0.icf.p[s]+a1.icf.mu))
+	}
+
+    
+  	for (k in 1:N) {
+		
+		# decision
+		
+		vh[k] = 21 - (open[k] + ud[k] + add[k])
+		z.di[k] =  b1.di.p[sidx[k]] * vh[k] + b2.di.p[sidx[k]] * abs(vh[k]) * vh[k] + b0.di.p[sidx[k]]
+		p.hit[k] = ilogit(z.di[k]) 
+		deci[k] ~ dbern(p.hit[k])
+
+		# decision conf
+		
+		sv[k] = abs(z.di[k])
+		z.icf[k] = b1.icf.p[sidx[k]] * sv[k]
+	
+		for (j in 1:3){
+			q.icf[k,j] = ilogit(th.icf[sidx[k],j] + z.icf[k])
+		}
+
+		p.icf[k,1] = 1 - q.icf[k,3]
+		p.icf[k,2] = q.icf[k,3] - q.icf[k,2]
+		p.icf[k,3] = q.icf[k,2] - q.icf[k,1]
+		p.icf[k,4] = q.icf[k,1]
+		icf.c[k] ~ dcat(p.icf[k,])
+		
+  	}
+}

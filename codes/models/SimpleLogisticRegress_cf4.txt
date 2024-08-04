@@ -1,0 +1,57 @@
+# Copyright (C) <2023>  <Risa Katayama>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+model {
+	b.mu[1] ~ dnorm(0,1e-2) # dk4, low
+	b.mu[2] ~ dnorm(0,1e-2) # dk4, high
+	b.mu[3] ~ dnorm(0,1e-2) # dk6, low
+	b.mu[4] ~ dnorm(0,1e-2) # dk6, high
+
+	b.sig[1] ~ dunif(1e-10,5)
+	b.sig[2] ~ dunif(1e-10,5)
+	b.sig[3] ~ dunif(1e-10,5)
+	b.sig[4] ~ dunif(1e-10,5)
+
+	a.mu[1] ~ dnorm(0,1e-2)
+	a.mu[2] ~ dnorm(0,1e-2)
+	a.mu[3] ~ dnorm(0,1e-2)
+	a.mu[4] ~ dnorm(0,1e-2)
+
+	a.sig[1] ~ dunif(1e-10,5)
+	a.sig[2] ~ dunif(1e-10,5)
+	a.sig[3] ~ dunif(1e-10,5)
+	a.sig[4] ~ dunif(1e-10,5)
+	
+	
+  	for (s in 1:ns) {
+		
+		for (j in 1:4){
+			
+			b.p[s,j] ~ dnorm(b.mu[j], 1/b.sig[j]^2)
+			a.p[s,j] ~ dnorm(a.mu[j], 1/a.sig[j]^2)
+			
+		}
+
+	}
+
+    
+  	for (k in 1:N) {
+		
+		z[k] = a.p[sidx[k],cf[k]] * (open[k] - b.p[sidx[k],cf[k]])
+		p[k] = ilogit(z[k]) 
+		di[k] ~ dbern(p[k])
+		
+  	}
+}

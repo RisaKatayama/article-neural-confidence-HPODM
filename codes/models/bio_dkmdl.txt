@@ -1,0 +1,56 @@
+# Copyright (C) <2023>  <Risa Katayama>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+model {
+	b.kcf.mu[1] ~ dnorm(0,1e-5)
+	b.kcf.mu[2] ~ dnorm(0,1e-5)
+
+	b.kcf.sig[1] ~ dunif(1e-10,5)
+	b.kcf.sig[2] ~ dunif(1e-10,5)
+
+	a0.kcf.mu ~ dnorm(0,1/10^2)
+	a1.kcf.mu ~ dunif(1e-5,5)
+
+	a0.kcf.sig ~ dunif(1e-10,5)
+	
+  	for (s in 1:ns) {
+
+		b1.kcf.p[s] ~ dnorm(b.kcf.mu[1],1/b.kcf.sig[1]^2)
+		b2.kcf.p[s] ~ dnorm(b.kcf.mu[2],1/b.kcf.sig[2]^2)
+
+		a0.kcf.p[s] ~ dnorm(a0.kcf.mu,1/a0.kcf.sig^2)
+		th.kcf[s,1:3] = sort(c(a0.kcf.p[s]-a1.kcf.mu, a0.kcf.p[s], a0.kcf.p[s]+a1.kcf.mu))
+	
+	}
+
+    
+  	for (k in 1:N) {
+		
+		# deck conf
+		
+		z.kcf[k] = b1.kcf.p[sidx[k]] * ent[k] + b2.kcf.p[sidx[k]] * vr[k]
+		
+		for (j in 1:3){
+			q.kcf[k,j] <- ilogit(th.kcf[sidx[k],j] + z.kcf[k])
+		}
+
+		p.kcf[k,1] = 1 - q.kcf[k,3]
+		p.kcf[k,2] = q.kcf[k,3] - q.kcf[k,2]
+		p.kcf[k,3] = q.kcf[k,2] - q.kcf[k,1]
+		p.kcf[k,4] = q.kcf[k,1]
+		kcf[k] ~ dcat(p.kcf[k,])
+		
+  	}
+}
