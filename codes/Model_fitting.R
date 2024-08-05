@@ -100,22 +100,16 @@ load.data = function(data){
     }
   }
 
-  vh.cdk = 21 - (data$open + (4*(1-dkest) + 6*dkest) + (data$p.us + (1-data$p.us)*4))
-  vh.udk = 21 - (data$open + (4*dkest + (1-dkest)*6) + (data$p.us + (1-data$p.us)*4))
-  vh.add = 21 - (data$open + m.add + (data$p.us + (1-data$p.us)*4))
-
   udc = (data$p.us==0.5)*1  # face-down deck H = 1, deck L = 0
   
   include = !is.na(data$deckest*data$cf.deck*data$decision*data$cf.deci)
   res = data.frame(open=data$open[include], add=data$add[include], dkest=dkest[include], dktrue=dktrue[include], kcf=data$cf.deck[include],
                    ev4.rel=ev4.rel[include], ev6.rel=ev6.rel[include], m.add=m.add[include], p4.bio=p4.bio[include], p6.bio=p6.bio[include], vr=vr[include],
                    icf=data$cf.deci[include], deci=data$decision[include], open=data$open[include], 
-                   vh.cdk=vh.cdk[include], vh.udk=vh.udk[include], vh.add=vh.add[include],
                    sidx=data$sidx[include], sidx.org=data$sidx.org[include])
   
   res$evd.rea = res$ev6.rel - res$ev4.rel
-  res$evd.mean = res$m.add - 5
-  res$pch.bio = (res$p4.bio-res$p6.bio)*(1-res$dkest) + (res$p6.bio-res$p4.bio)*res$dkest
+  res$evd.avg = res$m.add - 5
   res$ent.bio = - (res$p4.bio*log(res$p4.bio) + res$p6.bio*log(res$p6.bio))
   
   return(res)
@@ -225,19 +219,10 @@ tmpmdata = data.frame(open=mdata$open, ud=ud, add=cdk, deci=mdata$deci, icf=mdat
 
 res.hdm.dimdl = model.validate(tmpbdata, tmpmdata, hdm.dimdl$mcmc, rownames(summary.hdm.dimdl$summaries), "hdm.dimdl")
 
-ud = 3.4*(1-bdata$udc) + 2.5*bdata$udc
-cdk = 4*(1-bdata$dkest) + 6*bdata$dkest
-tmpbdata = data.frame(open=bdata$open, ud=ud, add=cdk, deci=bdata$deci, icf=bdata$icf, sidx=bdata$sidx)
-ud = 3.4*(1-mdata$udc) + 2.5*mdata$udc
-cdk = 4*(1-mdata$dkest) + 6*mdata$dkest
-tmpmdata = data.frame(open=mdata$open, ud=ud, add=cdk, deci=mdata$deci, icf=mdata$icf, sidx=mdata$sidx)
-
-res.hdm.dimdl = model.validate(tmpbdata, tmpmdata, hdm.dimdl$mcmc, rownames(summary.hdm.dimdl$summaries), "hdm.dimdl")
-
 
 ## PDM  model ############
 ## deck inference phase
-dat.dk = dump.format(list(dkest=bdata$dkest, de=bdata$evd.mean, vr=bdata$vr, kcf=bdata$kcf, sidx=bdata$sidx, N=N, ns=ns))
+dat.dk = dump.format(list(dkest=bdata$dkest, de=bdata$evd.avg, vr=bdata$vr, kcf=bdata$kcf, sidx=bdata$sidx, N=N, ns=ns))
 vals   = c("b.dk.mu","b.kcf.mu","a0.kcf.mu","a1.kcf.mu","b.dk.sig","b.kcf.sig","a0.kcf.sig",
            "b0.dk.p","b1.dk.p","b1.kcf.p","b2.kcf.p","a0.kcf.p")
 
@@ -246,8 +231,8 @@ avg.dkmdl = run.jags(model=paste0(mdl.folder,"basic_dkmdl.txt"), monitor=vals, d
 
 summary.avg.dkmdl = add.summary(avg.dkmdl)
 
-tmpbdata = data.frame(dkest=bdata$dkest, de=bdata$evd.mean, vr=bdata$vr, kcf=bdata$kcf, sidx=bdata$sidx)
-tmpmdata = data.frame(dkest=mdata$dkest, de=mdata$evd.mean, vr=mdata$vr, kcf=mdata$kcf, sidx=mdata$sidx)
+tmpbdata = data.frame(dkest=bdata$dkest, de=bdata$evd.avg, vr=bdata$vr, kcf=bdata$kcf, sidx=bdata$sidx)
+tmpmdata = data.frame(dkest=mdata$dkest, de=mdata$evd.avg, vr=mdata$vr, kcf=mdata$kcf, sidx=mdata$sidx)
 
 res.avg.dkmdl = model.validate(tmpbdata, tmpmdata, avg.dkmdl$mcmc, rownames(summary.avg.dkmdl$summaries), "avg.dkmdl")
 

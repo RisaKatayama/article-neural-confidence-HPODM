@@ -82,6 +82,33 @@ load.data.basic = function(data){
         kcf.hl[data$sidx==i] = tmpkcfhl
     }
 
+    ev4.rel = c()
+    ev6.rel = c()
+    for (i in 1:ns) {
+        for (s in 1:nses) {
+            tmpadd = data$add[data$sidx==i&data$ses==s]
+            z = dbinom(tmpadd,10,0.4)/(dbinom(tmpadd,10,0.4)+dbinom(tmpadd,10,0.6))
+            x = c(0,(tmpadd<5)*z)
+            tmpev4.rel = mapply(function(t,x){sum(x[1:t])}, 1:nt, MoreArgs=list(x=x))
+            z = dbinom(tmpadd,10,0.6)/(dbinom(tmpadd,10,0.4)+dbinom(tmpadd,10,0.6))
+            x = c(0,(tmpadd>5)*z)
+            tmpev6.rel = mapply(function(t,x){sum(x[1:t])}, 1:nt, MoreArgs=list(x=x))
+            ev4.rel = c(ev4.rel,tmpev4.rel)
+            ev6.rel = c(ev6.rel,tmpev6.rel)
+        }
+    }
+    evd.rea = ev6.rel - ev4.rel
+
+    vr = c()
+    for (i in 1:ns) {
+        for (s in 1:nses) {
+        tmpdkest = dkest[data$sidx==i&data$ses==s]
+        tmpdkest0 = (tmpdkest==0)*1
+        tmpdkest1 = (tmpdkest==1)*1
+        vr = c(vr, (sapply(1:16,function(j){nansum(tmpdkest0[1:j])})*tmpdkest0+sapply(1:16,function(j){nansum(tmpdkest1[1:j])})*tmpdkest1)/c(1:16))
+        }
+    }
+
     add = data$add # actual score of the additional card
     
     deci = data$decision # hit = 1, stay = 0
@@ -93,6 +120,7 @@ load.data.basic = function(data){
         tmpicfhl = (tmpicf>nanmean(tmpicf))*1
         icf.hl[data$sidx==i] = tmpicfhl
     }
+    udc = (data$p.us==0.5)*1
 
     trl = data$trl
     ses = data$ses
@@ -112,8 +140,9 @@ load.data.basic = function(data){
     }
     
     include = !is.na(data$deckest*data$cf.deck*data$decision*data$cf.deci)
-    res = data.frame(dkest=dkest[include], dktrue=dktrue[include], kcf=kcf[include], kcf.hl=kcf.hl[include], add=add[include],
-                     deci=deci[include], open=open[include], icf=icf[include], icf.hl=icf.hl[include],
+    res = data.frame(dkest=dkest[include], dktrue=dktrue[include], kcf=kcf[include], kcf.hl=kcf.hl[include], add=add[include], 
+                     evd.rea=evd.rea[include], vr=vr[include],
+                     deci=deci[include], open=open[include], icf=icf[include], icf.hl=icf.hl[include], udc=udc[include],
                      seqid=seqid[include], trl=trl[include], ses=ses[include], sidx=sidx[include])
     return(res)
 }
@@ -135,6 +164,22 @@ calc.pred4 = function(p){
 }
 
 calc.nmap = function(p){ return(nansum(p==max(p))) }
+
+
+tmpsummary = add.summary(res$dk.model)
+tmpdata = data.frame(dkest=data$dkest, de=data$evd.rea, vr=data$vr, kcf=data$kcf, sidx=data$sidx)
+tmpres = model.validate(tmpdata, NULL, res$dk.model$mcmc, rownames(tmpsummary$summaries), "rea.dkmdl")
+res$dk.summaries = tmpsummary
+res$dk.res = tmpres
+
+tmpsummary = add.summary(res$di.model)
+ud = 3.4*(1-data$udc) + 2.5*data$udc
+cdk = 4*(1-data$dkest) + 6*data$dkest
+udk = 6*(1-data$dkest) + 4*data$dkest
+tmpdata = dump.format(list(open=data$open, ud=ud, cdk=cdk, udk=udk, kcf=(res$dk.res$fitres$w.pred.kcf-1)/3, deci=data$deci, icf=data$icf, sidx=data$sidx, N=N, ns=ns))
+tmpres = model.validate(tmpdata, NULL, res$di.morel$mcmc, rownames(tmpsummary$summaries), "cwhdm.dimdl")
+res$di.summaries = tmpsummary
+res$di.res = tmpres
 
 
 #####################

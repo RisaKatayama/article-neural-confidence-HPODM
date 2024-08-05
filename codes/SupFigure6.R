@@ -22,6 +22,8 @@ load(paste0(c(dat.folder,"bhvdata_bhv.RData"),collapse="/"))
 
 load(paste0(c(mdlres.folder,"cwHDM_dimdl.RData"),collapse="/"))
 mdlres = res
+mdlres$dk.summaries = add.summary(mdlres$dk.model)
+mdlres$dik.summaries = add.summary(mdlres$di.model)
 
 exsbj = c(7,22) # deckest last quat < 0.5
 

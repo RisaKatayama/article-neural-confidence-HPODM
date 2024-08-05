@@ -35,74 +35,110 @@ calc.weighted.conf = function(pmat){
 model.validate = function(data, tsdata, model, pnames, modeltype){
 
     if (modeltype == "rea.dkmdl"){
-        message("Training results calculating : DK Model : REA ...")  
-        fitres = basic.dkmdl(data, model, pnames)
-        if (!is.null(tsdata)){
+        if (!is.null(data)){
+            message("Training results calculating : DK Model : REA ...")  
+            fitres = basic.dkmdl(data, model, pnames)
+            if (!is.null(tsdata)) {
+                message("Testing results calculating  : DK Model : REA ...")
+                valres = basic.dkmdl(tsdata, model, pnames)
+                valres = valres[names(valres)!="model"]
+            }
+        } else {
             message("Testing results calculating  : DK Model : REA ...")
             valres = basic.dkmdl(tsdata, model, pnames)
-            valres = valres[names(valres)!="model"]
         }
     
     }else if (modeltype == "avg.dkmdl"){
-        message("Training results calculating : DK Model : AVG ...")  
-        fitres = basic.dkmdl(data, model, pnames)
-        if (!is.null(tsdata)){
+        if (!is.null(data)){
+            message("Training results calculating : DK Model : AVG ...")  
+            fitres = basic.dkmdl(data, model, pnames)
+            if (!is.null(tsdata)) {
+                message("Testing results calculating  : DK Model : AVG ...")
+                valres = basic.dkmdl(tsdata, model, pnames)
+                valres = valres[names(valres)!="model"]
+            }
+        } else {
             message("Testing results calculating  : DK Model : AVG ...")
             valres = basic.dkmdl(tsdata, model, pnames)
-            valres = valres[names(valres)!="model"]
         }
-
     
     }else if (modeltype == "bio.dkmdl"){
-        message("Training results calculating : DK Model : BIO ...")  
-        fitres = bio.dkmdl(data, model, pnames)
-        if (!is.null(tsdata)){
+        if (!is.null(data)){
+            message("Training results calculating : DK Model : BIO ...")  
+            fitres = bio.dkmdl(data, model, pnames)
+            if (!is.null(tsdata)) {
+                message("Testing results calculating  : DK Model : BIO ...")
+                valres = bio.dkmdl(tsdata, model, pnames)
+                valres = valres[names(valres)!="model"]
+            }
+        } else {
             message("Testing results calculating  : DK Model : BIO ...")
             valres = bio.dkmdl(tsdata, model, pnames)
-            valres = valres[names(valres)!="model"]
         }
 
     } else if (modeltype == "cwhdm.dimdl") {
-        message("Training results calculating : DI Model : cwHDM ...")  
-        fitres = cwhdm.dimdl(data, model, pnames)
-        if (!is.null(tsdata)){
+        if (!is.null(data)){
+            message("Training results calculating : DI Model : cwHDM ...")  
+            fitres = cwhdm.dimdl(data, model, pnames)
+            if (!is.null(tsdata)) {
+                message("Testing results calculating  : DI Model : cwHDM ...")
+                valres = cwhdm.dimdl(tsdata, model, pnames)
+                valres = valres[names(valres)!="model"]
+            }
+        } else {
             message("Testing results calculating  : DI Model : cwHDM ...")
             valres = cwhdm.dimdl(tsdata, model, pnames)
-            valres = valres[names(valres)!="model"]
         }
 
     } else if (modeltype == "fphdm.dimdl") {
-        message("Training results calculating : DI Model : fpHDM ...")  
-        fitres = fphdm.dimdl(data, model, pnames)
-        if (!is.null(tsdata)){
+        if (!is.null(data)){
+            message("Training results calculating : DI Model : fpHDM ...")  
+            fitres = fphdm.dimdl(data, model, pnames)
+            if (!is.null(tsdata)) {
+                message("Testing results calculating  : DI Model : fpHDM ...")
+                valres = fphdm.dimdl(tsdata, model, pnames)
+                valres = valres[names(valres)!="model"]
+            }
+        } else {
             message("Testing results calculating  : DI Model : fpHDM ...")
             valres = fphdm.dimdl(tsdata, model, pnames)
-            valres = valres[names(valres)!="model"]
         }
 
     } else if (modeltype == "hdm.dimdl") {
-        message("Training results calculating : DI Model : HDM ...")  
-        fitres = basic.dimdl(data, model, pnames)
-        if (!is.null(tsdata)){
+        if (!is.null(data)){
+            message("Training results calculating : DI Model : HDM ...")  
+            fitres = basic.dimdl(data, model, pnames)
+            if (!is.null(tsdata)) {
+                message("Testing results calculating  : DI Model : HDM ...")
+                valres = basic.dimdl(tsdata, model, pnames)
+                valres = valres[names(valres)!="model"]
+            }
+        } else {
             message("Testing results calculating  : DI Model : HDM ...")
             valres = basic.dimdl(tsdata, model, pnames)
-            valres = valres[names(valres)!="model"]
         }
 
     } else if (modeltype == "pdm.dimdl") {
-        message("Training results calculating : DI Model : PDM ...")  
-        fitres = basic.dimdl(data, model, pnames)
-        if (!is.null(tsdata)){
+        if (!is.null(data)){
+            message("Training results calculating : DI Model : PDM ...")  
+            fitres = basic.dimdl(data, model, pnames)
+            if (!is.null(tsdata)) {
+                message("Testing results calculating  : DI Model : PDM ...")
+                valres = basic.dimdl(tsdata, model, pnames)
+                valres = valres[names(valres)!="model"]
+            }
+        } else {
             message("Testing results calculating  : DI Model : PDM ...")
             valres = basic.dimdl(tsdata, model, pnames)
-            valres = valres[names(valres)!="model"]
         }
     }
 
-    if (!is.null(tsdata)){
+    if (!is.null(data)&!is.null(tsdata)){
         res = list(fitres=fitres, valres=valres)
-    } else {
+    } else if (!is.null(data)) {
         res = list(fitres=fitres)
+    } else if (!is.null(tsdata)) {
+        res = list(valres=valres)
     }
 
     return(res)
@@ -617,6 +653,6 @@ simulate.bhv = function(mdlres, simns, dat){
                     b.dk=b.dk, b.kcf=b.kcf, a0.kcf=a0.kcf,
                     b.di=b.di, g.kcf=g.kcf, e.kcf=e.kcf, b.icf=b.icf, a0.icf=a0.kcf)
     simdat = list(dat=simdat, prm=simparam)
-    
+
     return(simdat)
 }
