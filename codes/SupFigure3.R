@@ -43,8 +43,8 @@ load(paste0(c(dat.folder,mdl.folder,"BIO_dkmdl.RData"),collapse="/"))
 res.bio = res 
 load(paste0(c(dat.folder,mdl.folder,"AVE_dkmdl.RData"),collapse="/"))
 res.ave = res 
-load(paste0(c(dat.folder,mdl.folder,"REA_dkmdl.RData"),collapse="/"))
-res.rea = res
+load(paste0(c(dat.folder,mdl.folder,"EVD_dkmdl.RData"),collapse="/"))
+res.evd = res
 
 inits1 = dump.format(list(.RNG.name="base::Super-Duper", .RNG.seed=111))
 inits2 = dump.format(list(.RNG.name="base::Wichmann-Hill", .RNG.seed=222))
@@ -91,7 +91,7 @@ load.data.basic = function(data){
     }
     evd.rea = ev6.rel - ev4.rel
 
-    vr = c() # deck inference stability
+    vr = c() # consistency rate of deck inference
     for (i in 1:ns) {
         for (s in 1:nses) {
             tmpdkest = dkest[data$sidx==i&data$ses==s]
@@ -138,16 +138,16 @@ for (i in 1:ns) {
     }
 }
 
-corrdk.rea = (data$dktrue==res.rea$res$fitres$pred.dk)*1
+corrdk.evd = (data$dktrue==res.evd$res$fitres$pred.dk)*1
 corrdk.ave = (data$dktrue==res.ave$res$fitres$pred.dk)*1
 corrdk.bio = (data$dktrue==res.bio$res$fitres$pred.dk)*1
 
-simdkacc.trl.rea = array(NaN,dim=c(ns,16))
+simdkacc.trl.evd = array(NaN,dim=c(ns,16))
 simdkacc.trl.ave = array(NaN,dim=c(ns,16))
 simdkacc.trl.bio = array(NaN,dim=c(ns,16))
 for (i in 1:ns) {
     for (t in 1:16) {
-        simdkacc.trl.rea[i,t] = mean(corrdk.rea[data$sidx==i&data$trl==t])
+        simdkacc.trl.evd[i,t] = mean(corrdk.evd[data$sidx==i&data$trl==t])
         simdkacc.trl.ave[i,t] = mean(corrdk.ave[data$sidx==i&data$trl==t])
         simdkacc.trl.bio[i,t] = mean(corrdk.bio[data$sidx==i&data$trl==t])
     }
@@ -156,10 +156,10 @@ for (i in 1:ns) {
 dat.figs3a = data.frame(acc=array(t(dkacc.trl)), trl=factor(rep(1:16,ns)))
 dat.figs3a = dat.figs3a[!is.na(dat.figs3a$acc),]
 
-simdat.figs3a = data.frame(acc=c(apply(simdkacc.trl.rea,2,nanmean),apply(simdkacc.trl.bio,2,nanmean),apply(simdkacc.trl.ave,2,nanmean)),
-                           s=c(apply(simdkacc.trl.rea,2,sd)/sqrt(apply(!is.na(simdkacc.trl.rea),2,sum)),apply(simdkacc.trl.bio,2,nansd)/sqrt(apply(!is.na(simdkacc.trl.bio),2,sum)),
+simdat.figs3a = data.frame(acc=c(apply(simdkacc.trl.evd,2,nanmean),apply(simdkacc.trl.bio,2,nanmean),apply(simdkacc.trl.ave,2,nanmean)),
+                           s=c(apply(simdkacc.trl.evd,2,sd)/sqrt(apply(!is.na(simdkacc.trl.evd),2,sum)),apply(simdkacc.trl.bio,2,nansd)/sqrt(apply(!is.na(simdkacc.trl.bio),2,sum)),
                                apply(simdkacc.trl.ave,2,nansd)/sqrt(apply(!is.na(simdkacc.trl.ave),2,sum))),
-                           trl=rep(1:16,3), mdl=factor(c(rep('REA',16),rep('BIO',16),rep('AVG',16)),levels=c('REA','BIO','AVG')))
+                           trl=rep(1:16,3), mdl=factor(c(rep('EVD',16),rep('BIO',16),rep('AVG',16)),levels=c('EVD','BIO','AVG')))
 simdat.figs3a = simdat.figs3a[!is.na(simdat.figs3a$acc),]
 
 figs3a = ggplot(data=dat.figs3a, aes(x=trl, y=acc)) +
@@ -169,7 +169,7 @@ figs3a = ggplot(data=dat.figs3a, aes(x=trl, y=acc)) +
         geom_line(data=simdat.figs3a, aes(x=trl, y=acc, group=mdl, color=mdl), linewidth=0.6, alpha=1) +
         geom_hline(yintercept=0.5, linetype="dotted") +
         scale_fill_manual(name=NULL, values=colors) +
-        scale_color_manual(name=NULL, values=colors, labels=c(' REA',' BIO',' AVG')) +
+        scale_color_manual(name=NULL, values=colors, labels=c(' EVD',' BIO',' AVG')) +
         guides(color=guide_legend(override.aes=list(linewidth=1))) +
         scale_x_discrete(name="Trial index in a single game") +
         scale_y_continuous(limits=c(0,1), name="Deck inference accuracy") + 
@@ -231,7 +231,7 @@ figs3c = ggplot(data=dat.figs3c, aes(x=evd, y=kcf, group=interaction(evd,s), fil
               legend.text=element_text(size=10), legend.spacing.x=unit(0.1,'cm'), legend.spacing.y=unit(0.1,'cm'),
               legend.key.width = unit(0.4,"cm"), axis.text.x=element_text(),
               axis.title.x=element_text(margin=margin(t=0.05,unit="cm"))) +
-        guides(fill=guide_legend(title="Deck inference\nstability", ncol=2, title.position="left"))
+        guides(fill=guide_legend(title="Consistency rate of\ndeck inference", ncol=2, title.position="left"))
 figs3c
 
 
@@ -243,12 +243,12 @@ for (i in 1:ns) {
     }
 }
 
-simkcf.trl.rea = array(NaN, dim=c(ns,16))
+simkcf.trl.evd = array(NaN, dim=c(ns,16))
 simkcf.trl.ave = array(NaN, dim=c(ns,16))
 simkcf.trl.bio = array(NaN, dim=c(ns,16))
 for (i in 1:ns) {
     for (t in 1:16) {
-       simkcf.trl.rea[i,t] = mean(res.rea$res$fitres$w.pred.kcf[data$sidx==i&data$trl==t])
+       simkcf.trl.evd[i,t] = mean(res.evd$res$fitres$w.pred.kcf[data$sidx==i&data$trl==t])
        simkcf.trl.ave[i,t] = mean(res.ave$res$fitres$w.pred.kcf[data$sidx==i&data$trl==t])
        simkcf.trl.bio[i,t] = mean(res.bio$res$fitres$w.pred.kcf[data$sidx==i&data$trl==t])
     }
@@ -257,10 +257,10 @@ for (i in 1:ns) {
 dat.figs3e = data.frame(cf=array(t(kcf.trl)), trl=factor(rep(1:16,ns)))
 dat.figs3e = dat.figs3e[!is.na(dat.figs3e$cf),]
 
-simdat.figs3e = data.frame(cf=c(apply(simkcf.trl.rea,2,nanmean),apply(simkcf.trl.bio,2,nanmean),apply(simkcf.trl.ave,2,nanmean)),
-                           s=c(apply(simkcf.trl.rea,2,nansd)/sqrt(apply(!is.na(simkcf.trl.rea),2,sum)),apply(simkcf.trl.bio,2,nansd)/sqrt(apply(!is.na(simkcf.trl.bio),2,sum)),
+simdat.figs3e = data.frame(cf=c(apply(simkcf.trl.evd,nanmean),apply(simkcf.trl.bio,2,nanmean),apply(simkcf.trl.ave,2,nanmean)),
+                           s=c(apply(simkcf.trl.evd,2,nansd)/sqrt(apply(!is.na(simkcf.trl.evd),2,sum)),apply(simkcf.trl.bio,2,nansd)/sqrt(apply(!is.na(simkcf.trl.bio),2,sum)),
                                apply(simkcf.trl.ave,2,nansd)/sqrt(apply(!is.na(simkcf.trl.ave),2,sum))),
-                           trl=rep(1:16,3), mdl=factor(c(rep('REA',16),rep('BIO',16),rep('MEAN',16)),levels=c('REA','BIO','MEAN')))
+                           trl=rep(1:16,3), mdl=factor(c(rep('EVD',16),rep('BIO',16),rep('MEAN',16)),levels=c('EVD','BIO','MEAN')))
 simdat.figs3e = simdat.figs3e[!is.na(simdat.figs3e$cf),]
 
 figs3e = ggplot(data=dat.figs3e, aes(x=trl, y=cf)) +
@@ -269,7 +269,7 @@ figs3e = ggplot(data=dat.figs3e, aes(x=trl, y=cf)) +
         geom_ribbon(data=simdat.figs3e, aes(x=trl, ymin=cf-s, ymax=cf+s, group=mdl, fill=mdl), colour=NA, alpha=0.5, show.legend=FALSE) +
         geom_line(data=simdat.figs3e, aes(x=trl, y=cf, group=mdl, color=mdl), linewidth=0.6, alpha=1) +
         scale_fill_manual(name=NULL, values=colors) +
-        scale_color_manual(name=NULL, values=colors, labels=c(' REA',' BIO',' AVG')) +
+        scale_color_manual(name=NULL, values=colors, labels=c(' EVD',' BIO',' AVG')) +
         guides(color=guide_legend(override.aes=list(linewidth=1))) +
         scale_x_discrete(name="Trial index in a single game") +
         scale_y_continuous(limits=c(1,4), name="Averaged Deck confidence level", labels=scales::number_format(accuracy=0.1)) + 
