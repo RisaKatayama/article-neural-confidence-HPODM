@@ -4,7 +4,7 @@ This repository contains data and code supporting the following paper:
 
 **
 
-Unthresholded group-level statistical maps supporting our results are available on NeuroVault: https://neurovault.org/collections/NZJMDMFQ/.
+Unthresholded group-level statistical maps supporting our results are available on NeuroVault: [https://neurovault.org/collections/NZJMDMFQ/](https://neurovault.org/collections/FUAPHGRH/).
 
 #### Folders
 * _data_
