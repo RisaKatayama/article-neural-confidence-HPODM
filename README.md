@@ -4,7 +4,7 @@ This repository contains data and code supporting the following paper:
 
 Katayama et al., "Neural mechanisms for incorporating prior-level uncertainty in hierarchical decision-making".
 
-Unthresholded group-level statistical maps supporting our results are available on NeuroVault: [https://neurovault.org/collections/NZJMDMFQ/](https://neurovault.org/collections/FUAPHGRH/).
+Unthresholded group-level statistical maps supporting our results are available on NeuroVault: [https://neurovault.org/collections/FUAPHGRH/](https://neurovault.org/collections/FUAPHGRH/).
 
 #### Folders
 * _data_
