@@ -1,8 +1,8 @@
-# article-neural-mechanisms-prior-uncertainty-hierarchical-decision
+# article-neural-confidence-HPODM
 
 This repository contains data and code supporting the following paper:
 
-Katayama et al., "Neural mechanisms for incorporating prior-level uncertainty in hierarchical decision-making".
+Katayama et al., "Neural mechanisms of confidence integration in hierarchical partially-observable decision-making".
 
 Unthresholded group-level statistical maps supporting our results are available on NeuroVault: [https://neurovault.org/collections/FUAPHGRH/](https://neurovault.org/collections/FUAPHGRH/).
 
